@@ -118,3 +118,53 @@ def add_repo_to_app_installation(installation_id, repo_id):
         return False
 
 
+def authenticate_with_github_app_token(github_app_token):
+    """Authenticate with GitHub CLI using a GitHub App token"""
+    print("🔐 Authenticating with GitHub App...")
+    
+    try:
+        # Use subprocess directly to pipe token via stdin for security
+        result = subprocess.run(
+            ["gh", "auth", "login", "--with-token"],
+            input=github_app_token,
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        print("✅ Successfully authenticated with GitHub App Token")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to authenticate with GitHub App Token:")
+        print(f"   Error: {e.stderr.strip()}")
+        if e.stdout:
+            print(f"   Output: {e.stdout.strip()}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error during authentication: {str(e)}")
+        return False
+
+
+def authenticate_with_pat(pat):
+    """Authenticate with GitHub CLI using a Personal Access Token (PAT)"""
+    print("🔐 Authenticating with Personal Access Token...")
+    
+    try:
+        # Use subprocess directly to pipe token via stdin for security
+        result = subprocess.run(
+            ["gh", "auth", "login", "--with-token"],
+            input=pat,
+            text=True,
+            capture_output=True,
+            check=True
+        )
+        print("✅ Successfully authenticated with Personal Access Token")
+        return True
+    except subprocess.CalledProcessError as e:
+        print(f"❌ Failed to authenticate with Personal Access Token:")
+        print(f"   Error: {e.stderr.strip()}")
+        if e.stdout:
+            print(f"   Output: {e.stdout.strip()}")
+        return False
+    except Exception as e:
+        print(f"❌ Unexpected error during authentication: {str(e)}")
+        return False
