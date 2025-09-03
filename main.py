@@ -30,9 +30,19 @@ def main():
     # Step 1: List your repositories
     print("🚀 Listing GitHub Repositories")
     gh_script.authenticate_with_pat(os.getenv("GITHUB_PAT"))
-    list_user_repos()
 
     # Step 1 Use GitHub App Authentication Token
+
+    
+    # Step 1: List your repositories
+    print("🚀 Listing GitHub Repositories")
+    repo_ids = []
+    repo_list = list_user_repos()
+    for repo in repo_list:
+        repo_ids.append(repo["id"])
+    print("repo_ids: ", repo_ids)
+
+    print("🚀 Authenticating with GitHub App Token")
     github_app_token = get_github_app_token()
     print("github_app_token: ", github_app_token)
     authenticate_with_github_app_token(github_app_token)
