@@ -19,6 +19,7 @@ load_dotenv()
 def run_gh_command(command):
     """Run a GitHub CLI command and return the result"""
     try:
+        print(f"🔍 DEBUG: Running command: {command}")
         result = subprocess.run(
             command, 
             shell=True, 
@@ -26,9 +27,13 @@ def run_gh_command(command):
             text=True, 
             check=True
         )
+        print(f"🔍 DEBUG: Command succeeded. Output length: {len(result.stdout)} chars")
         return {"success": True, "output": result.stdout.strip(), "error": None}
     except subprocess.CalledProcessError as e:
-        return {"success": False, "output": None, "error": e.stderr.strip()}
+        print(f"🔍 DEBUG: Command failed with exit code: {e.returncode}")
+        print(f"🔍 DEBUG: stderr: {e.stderr.strip()}")
+        print(f"🔍 DEBUG: stdout: {e.stdout.strip() if e.stdout else 'None'}")
+        return {"success": False, "output": e.stdout.strip() if e.stdout else None, "error": e.stderr.strip()}
 
 
 def list_github_apps():
@@ -81,6 +86,58 @@ def get_repo_info(owner, repo_name):
         return None
 
 
+def get_user_repos(username):
+    """Get repositories for a specific user using GitHub API"""
+    print(f"🔍 Getting repositories for user: {username}")
+    
+    command = (
+        f"gh api "
+        f"-H 'Accept: application/vnd.github+json' "
+        f"-H 'X-GitHub-Api-Version: 2022-11-28' "
+        f"/users/{username}/repos"
+    )
+    
+    result = run_gh_command(command)
+    
+    if result["success"]:
+        try:
+            repos = json.loads(result["output"])
+            print(f"✅ Found {len(repos)} repositories for user {username}")
+            return repos
+        except json.JSONDecodeError:
+            print(f"❌ Failed to parse repositories response: {result['output']}")
+            return []
+    else:
+        print(f"❌ Failed to get repositories for user {username}: {result['error']}")
+        return []
+
+
+def get_org_repos(org_name):
+    """Get repositories for a specific organization using GitHub API"""
+    print(f"🔍 Getting repositories for organization: {org_name}")
+    
+    command = (
+        f"gh api "
+        f"-H 'Accept: application/vnd.github+json' "
+        f"-H 'X-GitHub-Api-Version: 2022-11-28' "
+        f"/orgs/{org_name}/repos"
+    )
+    
+    result = run_gh_command(command)
+    
+    if result["success"]:
+        try:
+            repos = json.loads(result["output"])
+            print(f"✅ Found {len(repos)} repositories for organization {org_name}")
+            return repos
+        except json.JSONDecodeError:
+            print(f"❌ Failed to parse repositories response: {result['output']}")
+            return []
+    else:
+        print(f"❌ Failed to get repositories for organization {org_name}: {result['error']}")
+        return []
+
+
 def list_user_repos():
     """List your repositories"""
     print("🔍 Listing your repositories...")
@@ -102,13 +159,22 @@ def list_user_repos():
         return []
 
 
-def add_repo_to_app_installation(installation_id, repo_id):
+def add_repo_to_app_installation(installation_id, repo_id,):
     """Add a repository to a GitHub App installation using gh CLI"""
     print(f"🔧 Adding repository (ID: {repo_id}) to installation (ID: {installation_id})...")
-    
+
     # Use GitHub CLI to make the API call
-    command = f"gh api --method PUT /user/installations/{installation_id}/repositories/{repo_id}"
+    command = (
+        f"gh api --method PUT "
+        f"-H 'Accept: application/vnd.github+json' "
+        f"-H 'X-GitHub-Api-Version: 2022-11-28' "
+        f"/user/installations/{installation_id}/repositories/{repo_id}"
+    )
+    
+    print(f"🔍 DEBUG: Executing command: {command}")
     result = run_gh_command(command)
+    
+    print(f"🔍 DEBUG: Command result: {result}")
     
     if result["success"]:
         print("✅ Repository successfully added to GitHub App installation!")
