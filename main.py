@@ -34,11 +34,20 @@ def main():
 
     # Step 1: Create list of repository IDs
     print("🚀 Listing GitHub Repositories")
-    repo_ids = []
-    repo_list = list_user_repos()
+    search_criteria = ""
+    repo_id_list = []
+    repo_list = gh_api_client.get_user_repos("OD-Oraf")
+
     for repo in repo_list:
-        repo_ids.append(repo["id"])
-    print("repo_ids: ", repo_ids)
+        if search_criteria.strip() != "" and search_criteria not in repo["name"]:
+            continue
+        repo_id_list.append(repo["id"])
+        print(repo)
+
+    print("repo_id_list: ", repo_id_list)
+    # for repo in repo_list:
+    #     repo_ids.append(repo["id"])
+    # print("repo_ids: ", repo_ids)
 
     # Get GitHub App Token for adding repositories to the installation
     # print("🚀 Getting GitHub App Token")
@@ -46,8 +55,8 @@ def main():
     # print("github_app_token: ", github_app_token)
 
     # Add repositories to GitHub App installation
-    # for repo_id in repo_ids:
-    #     add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo_id, github_app_token)
+    for repo_id in repo_id_list:
+        add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo_id)
     #
     print("\n" + "=" * 60)
 
