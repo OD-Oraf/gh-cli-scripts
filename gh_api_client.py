@@ -159,7 +159,7 @@ def list_user_repos():
         return []
 
 
-def add_repo_to_app_installation(installation_id, repo_id,):
+def add_repo_to_app_installation(installation_id, repo_id):
     """Add a repository to a GitHub App installation using gh CLI"""
     print(f"🔧 Adding repository (ID: {repo_id}) to installation (ID: {installation_id})...")
 
