@@ -234,3 +234,22 @@ def authenticate_with_pat(pat):
     except Exception as e:
         print(f"❌ Unexpected error during authentication: {str(e)}")
         return False
+
+
+def add_repos_to_app_installation(username=None, org_name=None, search_criteria=""):
+    """Add repositories to GitHub App installation with optional search filtering"""
+    
+    # Get repos from user or org
+    if username:
+        repo_list = get_user_repos(username)
+    elif org_name:
+        repo_list = get_org_repos(org_name)
+    else:
+        print("❌ Provide either username or org_name")
+        return
+    
+    # Filter and add repos to installation
+    for repo in repo_list:
+        if search_criteria.strip() != "" and search_criteria not in repo["name"]:
+            continue
+        add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo["id"])

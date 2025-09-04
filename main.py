@@ -29,34 +29,29 @@ def main():
     log_banner()
 
     # Step 1: Authenticate with PAT to get List of repositories
-    print("🚀 Listing GitHub Repositories")
+    print("🚀 Authenticating with PAT")
     gh_api_client.authenticate_with_pat(os.getenv("GITHUB_PAT"))
 
-    # Step 1: Create list of repository IDs
-    print("🚀 Listing GitHub Repositories")
-    search_criteria = ""
-    repo_id_list = []
-    repo_list = gh_api_client.get_user_repos("OD-Oraf")
-
-    for repo in repo_list:
-        if search_criteria.strip() != "" and search_criteria not in repo["name"]:
-            continue
-        repo_id_list.append(repo["id"])
-        print(repo)
-
-    print("repo_id_list: ", repo_id_list)
+    # # Step 1: Create list of repository IDs
+    # print("🚀 Listing GitHub Repositories")
+    # search_criteria = ""
+    # repo_id_list = []
+    # repo_list = gh_api_client.get_user_repos("OD-Oraf")
+    #
     # for repo in repo_list:
-    #     repo_ids.append(repo["id"])
-    # print("repo_ids: ", repo_ids)
+    #     if search_criteria.strip() != "" and search_criteria not in repo["name"]:
+    #         continue
+    #     repo_id_list.append(repo["id"])
+    #     print(repo)
+    #
+    # print("repo_id_list: ", repo_id_list)
+    #
+    # # Add repositories to GitHub App installation
+    # for repo_id in repo_id_list:
+    #     add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo_id)
 
-    # Get GitHub App Token for adding repositories to the installation
-    # print("🚀 Getting GitHub App Token")
-    # github_app_token = get_github_app_token()
-    # print("github_app_token: ", github_app_token)
+    gh_api_client.add_repos_to_app_installation(username="OD-Oraf")
 
-    # Add repositories to GitHub App installation
-    for repo_id in repo_id_list:
-        add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo_id)
     #
     print("\n" + "=" * 60)
 
