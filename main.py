@@ -52,8 +52,10 @@ def main():
 
     # gh_api_client.add_repos_to_app_installation(username="OD-Oraf")
 
-    create_codeowners_file("https://github.com/OD-Oraf/gh-cli-scripts", code_owners="OD-ORAF")
-    #
+    # create_codeowners_file("https://github.com/OD-Oraf/gh-cli-scripts", code_owners="OD-ORAF")
+
+    gh_api_client.sync_repos("https://github.com/OD-Oraf/scratch", "https://github.com/OD-Oraf/scratch-copy")
+
     print("\n" + "=" * 60)
 
 

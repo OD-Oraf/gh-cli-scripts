@@ -336,3 +336,67 @@ def create_codeowners_file(repo_url, code_owners="OD-ORAF"):
     except Exception as e:
         print(f"Error creating CODEOWNERS file: {str(e)}")
         return False
+
+def sync_repos(source_repo_url, target_repo_url):
+    """
+    Sync repositories by cloning source repo with mirror and pushing to target repo
+    
+    Args:
+        source_repo_url (str): URL of the source repository to clone
+        target_repo_url (str): URL of the target repository to push to
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Extract repository name from source URL for directory naming
+        repo_name = source_repo_url.split('/')[-1].replace('.git', '') + '.git'
+        
+        print(f"Cloning source repository with mirror: {source_repo_url}")
+        
+        # Clone source repo with --mirror
+        clone_result = subprocess.run(['git', 'clone', '--mirror', source_repo_url], 
+                                    capture_output=True, text=True)
+        if clone_result.returncode != 0:
+            print(f"Error cloning repository: {clone_result.stderr}")
+            return False
+        
+        # Change to the repository directory
+        repo_dir = repo_name
+        if not os.path.exists(repo_dir):
+            print(f"Repository directory {repo_dir} not found after cloning")
+            return False
+        
+        # Change to repository directory for git operations
+        original_dir = os.getcwd()
+        os.chdir(repo_dir)
+        
+        try:
+            print(f"Updating remote origin to target repository: {target_repo_url}")
+            
+            # Update remote with target repo url
+            remote_result = subprocess.run(['git', 'remote', 'set-url', 'origin', target_repo_url],
+                                         capture_output=True, text=True)
+            if remote_result.returncode != 0:
+                print(f"Error setting remote URL: {remote_result.stderr}")
+                return False
+            
+            print(f"Pushing mirror to target repository: {target_repo_url}")
+            
+            # Push changes to target repo
+            push_result = subprocess.run(['git', 'push', '--mirror', 'origin'],
+                                       capture_output=True, text=True)
+            if push_result.returncode != 0:
+                print(f"Error pushing to target repository: {push_result.stderr}")
+                return False
+            
+            print("Successfully synced repositories")
+            return True
+            
+        finally:
+            # Change back to original directory
+            os.chdir(original_dir)
+    
+    except Exception as e:
+        print(f"Error syncing repositories: {str(e)}")
+        return False
