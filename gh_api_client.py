@@ -3,7 +3,7 @@
 GitHub App Repository Management using GitHub CLI
 This script uses 'gh' commands instead of direct API calls for better reliability.
 """
-
+import shutil
 import subprocess
 import json
 import sys
@@ -253,3 +253,86 @@ def add_repos_to_app_installation(username=None, org_name=None, search_criteria=
         if search_criteria.strip() != "" and search_criteria not in repo["name"]:
             continue
         add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo["id"])
+
+
+def create_codeowners_file(repo_url, code_owners="OD-ORAF"):
+    """
+    Checkout a repository and create a CODEOWNERS file at .github/CODEOWNERS
+    
+    Args:
+        repo_url (str): The URL of the repository to checkout
+        code_owners (str, optional): The GitHub username or team to set as code owner. 
+                                   Defaults to "OD-ORAF".
+    
+    Returns:
+        bool: True if successful, False otherwise
+    """
+    try:
+        # Extract repository name from URL for directory naming
+        repo_name = repo_url.split('/')[-1].replace('.git', '')
+        
+        print(f"Cloning repository: {repo_url}")
+        
+        # Clone the repository
+        clone_result = subprocess.run(['git', 'clone', repo_url], 
+                                    capture_output=True, text=True)
+        if clone_result.returncode != 0:
+            print(f"Error cloning repository: {clone_result.stderr}")
+            return False
+        
+        # Change to the repository directory
+        repo_dir = repo_name
+        if not os.path.exists(repo_dir):
+            print(f"Repository directory {repo_dir} not found after cloning")
+            return False
+        
+        # Create .github directory if it doesn't exist
+        github_dir = os.path.join(repo_dir, '.github')
+        os.makedirs(github_dir, exist_ok=True)
+        
+        # Create CODEOWNERS file
+        codeowners_path = os.path.join(github_dir, 'CODEOWNERS')
+        codeowners_content = f"""# Global code owners \n * @{code_owners}
+
+        """
+        
+        with open(codeowners_path, 'w') as f:
+            f.write(codeowners_content)
+        
+        print(f"Created CODEOWNERS file at {codeowners_path}")
+        
+        # Change to repository directory for git operations
+        original_dir = os.getcwd()
+        os.chdir(repo_dir)
+        
+        try:
+            # Add the CODEOWNERS file to git
+            add_result = subprocess.run(['git', 'add', '.github/CODEOWNERS'], 
+                                     capture_output=True, text=True)
+            if add_result.returncode != 0:
+                print(f"Error adding CODEOWNERS file: {add_result.stderr}")
+                return False
+            
+            # Commit the changes
+            commit_result = subprocess.run(['git', 'commit', '-m', f'Add CODEOWNERS file with {code_owners} as owner'],
+                                        capture_output=True, text=True)
+            if commit_result.returncode != 0:
+                print(f"Error committing CODEOWNERS file: {commit_result.stderr}")
+                return False
+            
+            # Push the changes
+            push_result = subprocess.run(['git', 'push'], capture_output=True, text=True)
+            if push_result.returncode != 0:
+                print(f"Error pushing CODEOWNERS file: {push_result.stderr}")
+                return False
+            
+            print("Successfully created and pushed CODEOWNERS file")
+            return True
+            
+        finally:
+            # Change back to original directory
+            os.chdir(original_dir)
+    
+    except Exception as e:
+        print(f"Error creating CODEOWNERS file: {str(e)}")
+        return False

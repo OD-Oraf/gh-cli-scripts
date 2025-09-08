@@ -5,7 +5,7 @@ Main execution script for GitHub App Repository Management
 from dotenv import load_dotenv
 import os
 
-from gh_api_client import list_user_repos
+from gh_api_client import list_user_repos, create_codeowners_file
 from gh_api_client import add_repo_to_app_installation
 from gen_app_token import get_github_app_token
 from gh_api_client import authenticate_with_github_app_token
@@ -50,8 +50,9 @@ def main():
     # for repo_id in repo_id_list:
     #     add_repo_to_app_installation(os.getenv("GITHUB_APP_INSTALLATION_ID"), repo_id)
 
-    gh_api_client.add_repos_to_app_installation(username="OD-Oraf")
+    # gh_api_client.add_repos_to_app_installation(username="OD-Oraf")
 
+    create_codeowners_file("https://github.com/OD-Oraf/gh-cli-scripts", code_owners="OD-ORAF")
     #
     print("\n" + "=" * 60)
 
